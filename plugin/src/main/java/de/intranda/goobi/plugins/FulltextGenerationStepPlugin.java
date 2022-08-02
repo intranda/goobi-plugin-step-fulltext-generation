@@ -43,7 +43,6 @@ import de.intranda.digiverso.pdf.exception.PDFWriteException;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.StorageProvider;
-import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -131,7 +130,7 @@ public class FulltextGenerationStepPlugin implements IStepPluginVersion2 {
         try {
             String imageFolder = process.getImagesTifDirectory(false);
             originalFiles = StorageProvider.getInstance().listFiles(imageFolder);
-        } catch (IOException | InterruptedException | SwapException | DAOException e) {
+        } catch (IOException | SwapException e) {
             log.error(e);
             return PluginReturnValue.ERROR;
         }
@@ -158,7 +157,7 @@ public class FulltextGenerationStepPlugin implements IStepPluginVersion2 {
                     StorageProvider.getInstance().createDirectories(imagesFolder);
                 }
 
-            } catch (SwapException | DAOException | IOException | InterruptedException e) {
+            } catch (SwapException | IOException e) {
                 log.error(e);
                 return PluginReturnValue.ERROR;
             }
