@@ -11,11 +11,7 @@
         <!-- which projects to use for (can be more then one, otherwise use *) -->
         <project>*</project>
         <step>*</step>
-        
-        <!-- sample parameter -->
-        <value>test</value>
-        <!-- display button to finish the task directly from within the entered plugin -->
-        <allowTaskFinishButtons>true</allowTaskFinishButtons>
+        <epub command="/usr/bin/ebook-convert| {input}| {output}"></epub>
     </config>
 
 </config_plugin>

@@ -2,8 +2,11 @@ package de.intranda.goobi.plugins;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * This file is part of a plugin for Goobi - a Workflow tool for the support of mass digitization.
@@ -28,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.configuration.SubnodeConfiguration;
+import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
@@ -52,7 +56,7 @@ import net.xeoh.plugins.base.annotations.PluginImplementation;
 @Log4j2
 public class FulltextGenerationStepPlugin implements IStepPluginVersion2 {
 
-    // for epub: install calibre or epub2txt2
+    // for epub: install calibre or epub2txt2  ebook-convert input.epub output.txt
     // for pdf: install ghostscript
 
     private static final String DEFAULT_ENCODING = "utf-8";
@@ -66,6 +70,7 @@ public class FulltextGenerationStepPlugin implements IStepPluginVersion2 {
     @Getter
     private boolean allowTaskFinishButtons;
     private String returnPath;
+    private List<String> epubCall;
 
     @Override
     public void initialize(Step step, String returnPath) {
@@ -74,9 +79,9 @@ public class FulltextGenerationStepPlugin implements IStepPluginVersion2 {
 
         // read parameters from correct block in configuration file
         SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
-        value = myconfig.getString("value", "default value");
-        allowTaskFinishButtons = myconfig.getBoolean("allowTaskFinishButtons", false);
-        log.info("FulltextGeneration step plugin initialized");
+        myconfig.setExpressionEngine(new XPathExpressionEngine());
+        epubCall = Arrays.asList(myconfig.getStringArray("/epub/@command"));
+
     }
 
     @Override
@@ -187,7 +192,31 @@ public class FulltextGenerationStepPlugin implements IStepPluginVersion2 {
                 }
                 // if epub
                 else if (source.getFileName().toString().toLowerCase().endsWith(".epub")) {
-                    // call cli command from config
+                    try {
+                        Path destination = Paths.get(textFolder.toString(), source.getFileName().toString().replace(".epub", ".txt"));
+                        // call cli command from config
+                        List<String> params = new ArrayList<>();
+                        for (String param : epubCall) {
+                            if ("{input}".equals(param)) {
+                                params.add(source.toString());
+                            } else if ("{output}".equals(param)) {
+                                params.add( destination.toString());
+                            } else {
+                                params.add(param);
+                            }
+                        }
+                        ProcessBuilder pb = new ProcessBuilder(params);
+                        java.lang.Process  proc = pb.start();
+                        InputStream stdOut = proc.getInputStream();
+                        InputStream stdErr = proc.getErrorStream();
+                        stdOut.close();
+                        stdErr.close();
+
+                        proc.waitFor();
+
+                    } catch (IOException | InterruptedException e) {
+                        log.error(e);
+                    }
                 }
 
             }
