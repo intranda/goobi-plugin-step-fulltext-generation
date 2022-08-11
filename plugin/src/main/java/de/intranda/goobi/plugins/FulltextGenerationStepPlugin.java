@@ -148,7 +148,7 @@ public class FulltextGenerationStepPlugin implements IStepPluginVersion2 {
                 textFolder = Paths.get(process.getOcrTxtDirectory());
                 pdfFolder = Paths.get(process.getOcrPdfDirectory());
                 altoFolder = Paths.get(process.getOcrAltoDirectory());
-                imagesFolder = Paths.get(process.getThumbsDirectory(), process.getTitel() + "_media");
+                imagesFolder = Paths.get(process.getImagesDirectory(), process.getTitel() + "_thumbs");
                 if (!StorageProvider.getInstance().isFileExists(textFolder)) {
                     StorageProvider.getInstance().createDirectories(textFolder);
                 }
