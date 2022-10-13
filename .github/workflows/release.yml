@@ -50,16 +50,6 @@ jobs:
         asset_path: plugin/module-main/target/plugin_intranda_step_fulltext_generation.jar
         asset_name: plugin_intranda_step_fulltext_generation.jar
         asset_content_type: application/jar
-    - name: Upload GUI asset
-      id: upload-gui-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: plugin/module-gui/target/plugin_intranda_step_fulltext_generation-GUI.jar
-        asset_name: plugin_intranda_step_fulltext_generation-GUI.jar
-        asset_content_type: application/jar
     - name: Upload Config asset
       id: upload-config-asset
       uses: actions/upload-release-asset@v1
