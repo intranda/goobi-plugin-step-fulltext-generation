@@ -59,6 +59,8 @@ public class FulltextGenerationStepPlugin implements IStepPluginVersion2 {
     // for epub: install calibre or epub2txt2  ebook-convert input.epub output.txt
     // for pdf: install ghostscript
 
+    private static final long serialVersionUID = 1L;
+
     private static final String DEFAULT_ENCODING = "utf-8";
 
     @Getter
@@ -116,7 +118,7 @@ public class FulltextGenerationStepPlugin implements IStepPluginVersion2 {
 
     @Override
     public HashMap<String, StepReturnValue> validate() {
-        return null;
+        return null; //NOSONAR
     }
 
     @Override
@@ -173,9 +175,10 @@ public class FulltextGenerationStepPlugin implements IStepPluginVersion2 {
                 if (source.getFileName().toString().toLowerCase().endsWith(".pdf")) {
                     try {
                         PDFConverter.writeFullText(source.toFile(), textFolder.toFile(), DEFAULT_ENCODING, counter.toInteger());
+                        List<File> singlePagePdfs = PDFConverter.writeSinglePagePdfs(source.toFile(), pdfFolder.toFile(), 1);
+
                         List<File> imageFiles = PDFConverter.writeImages(source.toFile(), imagesFolder.toFile(), counter.toInteger(), 300, "tif",
                                 new File(ConfigurationHelper.getInstance().getTemporaryFolder()), "ghostscript");
-                        List<File> singlePagePdfs = PDFConverter.writeSinglePagePdfs(source.toFile(), pdfFolder.toFile(), 1);
                         for (int i = 0; i < singlePagePdfs.size(); i++) {
                             File pdfFile = singlePagePdfs.get(i);
                             File imageFile = null;
@@ -185,7 +188,15 @@ public class FulltextGenerationStepPlugin implements IStepPluginVersion2 {
                             PDFConverter.writeAltoFile(pdfFile, altoFolder.toFile(), imageFile, false);
                         }
                         counter.add(Math.max(singlePagePdfs.size(), imageFiles.size()));
-                    } catch (PDFReadException | PDFWriteException e) {
+
+                        // finally delete all images but the first one
+                        if (imageFiles.size() > 1) {
+                            for (int i = 1; i < imageFiles.size(); i++) {
+                                StorageProvider.getInstance().deleteFile(imageFiles.get(i).toPath());
+                            }
+                        }
+
+                    } catch (PDFReadException | PDFWriteException | IOException e) {
                         log.error(e);
                         return PluginReturnValue.ERROR;
                     }
@@ -200,13 +211,13 @@ public class FulltextGenerationStepPlugin implements IStepPluginVersion2 {
                             if ("{input}".equals(param)) {
                                 params.add(source.toString());
                             } else if ("{output}".equals(param)) {
-                                params.add( destination.toString());
+                                params.add(destination.toString());
                             } else {
                                 params.add(param);
                             }
                         }
                         ProcessBuilder pb = new ProcessBuilder(params);
-                        java.lang.Process  proc = pb.start();
+                        java.lang.Process proc = pb.start();
                         InputStream stdOut = proc.getInputStream();
                         InputStream stdErr = proc.getErrorStream();
                         stdOut.close();
