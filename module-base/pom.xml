@@ -2,9 +2,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.goobi.workflow.plugin</groupId>
-    <artifactId>plugin-step-fulltext_generation</artifactId>
+    <artifactId>plugin-step-fulltext-generation</artifactId>
     <version>24.03-SNAPSHOT</version>
   </parent>
-  <artifactId>plugin-step-fulltext_generation-base</artifactId>
+  <artifactId>plugin-step-fulltext-generation-base</artifactId>
   <packaging>jar</packaging>
 </project>
